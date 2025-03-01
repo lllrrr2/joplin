@@ -24,7 +24,7 @@ interface State {
 }
 
 class ImportScreenComponent extends React.Component<Props, State> {
-	UNSAFE_componentWillMount() {
+	public UNSAFE_componentWillMount() {
 		this.setState({
 			doImport: true,
 			filePath: this.props.filePath,
@@ -32,7 +32,7 @@ class ImportScreenComponent extends React.Component<Props, State> {
 		});
 	}
 
-	UNSAFE_componentWillReceiveProps(newProps: Props) {
+	public UNSAFE_componentWillReceiveProps(newProps: Props) {
 		if (newProps.filePath) {
 			this.setState(
 				{
@@ -42,18 +42,18 @@ class ImportScreenComponent extends React.Component<Props, State> {
 				},
 				() => {
 					void this.doImport();
-				}
+				},
 			);
 		}
 	}
 
-	componentDidMount() {
+	public componentDidMount() {
 		if (this.state.filePath && this.state.doImport) {
 			void this.doImport();
 		}
 	}
 
-	addMessage(key: string, text: string) {
+	public addMessage(key: string, text: string) {
 		const messages = this.state.messages.slice();
 
 		messages.push({ key: key, text: text });
@@ -61,7 +61,7 @@ class ImportScreenComponent extends React.Component<Props, State> {
 		this.setState({ messages: messages });
 	}
 
-	uniqueMessages() {
+	public uniqueMessages() {
 		const output = [];
 		const messages = this.state.messages.slice();
 		const foundKeys = [];
@@ -74,7 +74,7 @@ class ImportScreenComponent extends React.Component<Props, State> {
 		return output;
 	}
 
-	async doImport() {
+	public async doImport() {
 		const filePath = this.props.filePath;
 		const folderTitle = await Folder.findUniqueItemTitle(filename(filePath));
 
@@ -83,6 +83,7 @@ class ImportScreenComponent extends React.Component<Props, State> {
 		let lastProgress = '';
 
 		const options = {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 			onProgress: (progressState: any) => {
 				const line = [];
 				line.push(_('Found: %d.', progressState.loaded));
@@ -94,6 +95,7 @@ class ImportScreenComponent extends React.Component<Props, State> {
 				lastProgress = line.join(' ');
 				this.addMessage('progress', lastProgress);
 			},
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 			onError: (error: any) => {
 				// Don't display the error directly because most of the time it doesn't matter
 				// (eg. for weird broken HTML, but the note is still imported)
@@ -109,7 +111,7 @@ class ImportScreenComponent extends React.Component<Props, State> {
 		this.setState({ doImport: false });
 	}
 
-	render() {
+	public render() {
 		const theme = themeStyle(this.props.themeId);
 		const messages = this.uniqueMessages();
 
