@@ -3,13 +3,15 @@ import { themeStyle } from '@joplin/lib/theme';
 
 interface Props {
 	themeId: number;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	style: any;
 	iconName: string;
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
 	onClick: Function;
 }
 
 class IconButton extends React.Component<Props> {
-	render() {
+	public render() {
 		const style = this.props.style;
 		const theme = themeStyle(this.props.themeId);
 		const iconStyle = {
@@ -18,21 +20,19 @@ class IconButton extends React.Component<Props> {
 		};
 		const icon = <i style={iconStyle} className={`fas ${this.props.iconName}`}></i>;
 
-		const rootStyle = Object.assign(
-			{
-				display: 'flex',
-				textDecoration: 'none',
-				padding: 10,
-				width: theme.buttonMinHeight,
-				height: theme.buttonMinHeight,
-				boxSizing: 'border-box',
-				alignItems: 'center',
-				justifyContent: 'center',
-				backgroundColor: theme.backgroundColor,
-				cursor: 'default',
-			},
-			style
-		);
+		const rootStyle = {
+			display: 'flex',
+			textDecoration: 'none',
+			padding: 10,
+			width: theme.buttonMinHeight,
+			height: theme.buttonMinHeight,
+			boxSizing: 'border-box',
+			alignItems: 'center',
+			justifyContent: 'center',
+			backgroundColor: theme.backgroundColor,
+			cursor: 'default',
+			...style,
+		};
 
 		return (
 			<a

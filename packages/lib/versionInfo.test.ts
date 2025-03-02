@@ -58,7 +58,7 @@ describe('getPluginLists', () => {
 				app_min_version: '1' },
 			'',
 			() => {},
-			''
+			'',
 		);
 
 		const plugins: Plugins = {};
@@ -82,10 +82,11 @@ describe('getPluginLists', () => {
 					app_min_version: '1' },
 				'',
 				() => {},
-				''
+				'',
 			);
 			plugins[plugin.manifest.id] = plugin;
 		}
+
 		const v = versionInfo(packageInfo, plugins);
 
 		expect(v.body).toMatch(/\n\nPlugin1: 1\nPlugin2: 1\nPlugin3: 1/);
@@ -105,11 +106,12 @@ describe('getPluginLists', () => {
 					app_min_version: '1' },
 				'',
 				() => {},
-				''
+				'',
 			);
 
 			plugins[plugin.manifest.id] = plugin;
 		}
+
 		const v = versionInfo(packageInfo, plugins);
 
 		const body = '\n';

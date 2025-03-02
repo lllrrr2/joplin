@@ -3,84 +3,95 @@ import { reg } from '@joplin/lib/registry.js';
 
 export default class BaseCommand {
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	protected stdout_: any = null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	protected prompt_: any = null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	protected dispatcher_: any;
 
-	usage(): string {
+	public usage(): string {
 		throw new Error('Usage not defined');
 	}
 
-	encryptionCheck(item: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public encryptionCheck(item: any) {
 		if (item && item.encryption_applied) throw new Error(_('Cannot change encrypted item'));
 	}
 
-	description() {
+	public description() {
 		throw new Error('Description not defined');
 	}
 
-	async action(_args: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public async action(_args: any) {
 		throw new Error('Action not defined');
 	}
 
-	compatibleUis() {
+	public compatibleUis() {
 		return ['cli', 'gui'];
 	}
 
-	supportsUi(ui: string) {
+	public supportsUi(ui: string) {
 		return this.compatibleUis().indexOf(ui) >= 0;
 	}
 
-	options(): any[] {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public options(): any[] {
 		return [];
 	}
 
-	hidden() {
+	public hidden() {
 		return false;
 	}
 
-	enabled() {
+	public enabled() {
 		return true;
 	}
 
-	cancellable() {
+	public cancellable() {
 		return false;
 	}
 
-	async cancel() {}
+	public async cancel() {}
 
-	name() {
+	public name() {
 		const r = this.usage().split(' ');
 		return r[0];
 	}
 
-	setDispatcher(fn: Function) {
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
+	public setDispatcher(fn: Function) {
 		this.dispatcher_ = fn;
 	}
 
-	dispatch(action: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public dispatch(action: any) {
 		if (!this.dispatcher_) throw new Error('Dispatcher not defined');
 		return this.dispatcher_(action);
 	}
 
-	setStdout(fn: Function) {
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
+	public setStdout(fn: Function) {
 		this.stdout_ = fn;
 	}
 
-	stdout(text: string) {
+	public stdout(text: string) {
 		if (this.stdout_) this.stdout_(text);
 	}
 
-	setPrompt(fn: Function) {
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
+	public setPrompt(fn: Function) {
 		this.prompt_ = fn;
 	}
 
-	async prompt(message: string, options: any = null) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public async prompt(message: string, options: any = null) {
 		if (!this.prompt_) throw new Error('Prompt is undefined');
 		return await this.prompt_(message, options);
 	}
 
-	metadata() {
+	public metadata() {
 		return {
 			name: this.name(),
 			usage: this.usage(),
@@ -89,7 +100,7 @@ export default class BaseCommand {
 		};
 	}
 
-	logger() {
+	public logger() {
 		return reg.logger();
 	}
 }

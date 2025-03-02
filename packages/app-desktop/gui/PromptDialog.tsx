@@ -1,47 +1,62 @@
 import * as React from 'react';
 import { _ } from '@joplin/lib/locale';
 import { themeStyle } from '@joplin/lib/theme';
-import time from '@joplin/lib/time';
-const Datetime = require('react-datetime').default;
 import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import { focus } from '@joplin/lib/utils/focusHandler';
+import Dialog from './Dialog';
+import { ChangeEvent } from 'react';
+import { formatDateTimeLocalToMs, isValidDate } from '@joplin/utils/time';
+
 interface Props {
 	themeId: number;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	defaultValue: any;
 	visible: boolean;
-	style: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	buttons: any[];
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
 	onClose: Function;
 	inputType: string;
 	description: string;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	answer?: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	autocomplete: any;
 	label: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 export default class PromptDialog extends React.Component<Props, any> {
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private answerInput_: any;
 	private focusInput_: boolean;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private styles_: any;
 	private styleKey_: string;
+	private menuIsOpened_ = false;
 
-	constructor(props: Props) {
+	public constructor(props: Props) {
 		super(props);
 
 		this.answerInput_ = React.createRef();
+
+		this.select_menuOpen = this.select_menuOpen.bind(this);
+		this.select_menuClose = this.select_menuClose.bind(this);
 	}
 
-	UNSAFE_componentWillMount() {
+	public UNSAFE_componentWillMount() {
 		this.setState({
 			visible: false,
 			answer: this.props.defaultValue ? this.props.defaultValue : '',
 		});
 		this.focusInput_ = true;
+		this.menuIsOpened_ = false;
 	}
 
-	UNSAFE_componentWillReceiveProps(newProps: Props) {
+	public UNSAFE_componentWillReceiveProps(newProps: Props) {
 		if ('visible' in newProps && newProps.visible !== this.props.visible) {
 			this.setState({ visible: newProps.visible });
 			if (newProps.visible) this.focusInput_ = true;
@@ -52,13 +67,21 @@ export default class PromptDialog extends React.Component<Props, any> {
 		}
 	}
 
-	componentDidUpdate() {
-		if (this.focusInput_ && this.answerInput_.current) this.answerInput_.current.focus();
+	private select_menuOpen() {
+		this.menuIsOpened_ = true;
+	}
+
+	private select_menuClose() {
+		this.menuIsOpened_ = false;
+	}
+
+	public componentDidUpdate() {
+		if (this.focusInput_ && this.answerInput_.current) focus('PromptDialog::componentDidUpdate', this.answerInput_.current);
 		this.focusInput_ = false;
 	}
 
-	styles(themeId: number, width: number, height: number, visible: boolean) {
-		const styleKey = `${themeId}_${width}_${height}_${visible}`;
+	public styles(themeId: number, visible: boolean) {
+		const styleKey = `${themeId}_${visible}`;
 		if (styleKey === this.styleKey_) return this.styles_;
 
 		const theme = themeStyle(themeId);
@@ -66,30 +89,6 @@ export default class PromptDialog extends React.Component<Props, any> {
 		this.styleKey_ = styleKey;
 
 		this.styles_ = {};
-
-		const paddingTop = 20;
-
-		this.styles_.modalLayer = {
-			zIndex: 9999,
-			position: 'absolute',
-			top: 0,
-			left: 0,
-			width: width,
-			height: height,
-			backgroundColor: 'rgba(0,0,0,0.6)',
-			display: visible ? 'flex' : 'none',
-			alignItems: 'flex-start',
-			justifyContent: 'center',
-			paddingTop: `${paddingTop}px`,
-		};
-
-		this.styles_.promptDialog = {
-			backgroundColor: theme.backgroundColor,
-			padding: 16,
-			display: 'inline-block',
-			maxWidth: width * 0.5,
-			boxShadow: '6px 6px 20px rgba(0,0,0,0.5)',
-		};
 
 		this.styles_.button = {
 			minWidth: theme.buttonMinWidth,
@@ -110,7 +109,7 @@ export default class PromptDialog extends React.Component<Props, any> {
 		};
 
 		this.styles_.input = {
-			width: 0.5 * width,
+			width: 'calc(0.5 * var(--prompt-width))',
 			maxWidth: 400,
 			color: theme.color,
 			backgroundColor: theme.backgroundColor,
@@ -119,43 +118,56 @@ export default class PromptDialog extends React.Component<Props, any> {
 		};
 
 		this.styles_.select = {
-			control: (provided: any) =>
-				Object.assign(provided, {
-					minWidth: width * 0.2,
-					maxWidth: width * 0.5,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			control: (provided: any) => {
+				return { ...provided,
+					minWidth: 'calc(var(--prompt-width) * 0.2)',
+					maxWidth: 'calc(var(--prompt-width) * 0.5)',
 					fontFamily: theme.fontFamily,
-				}),
-			input: (provided: any) =>
-				Object.assign(provided, {
+				};
+			},
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			input: (provided: any) => {
+				return { ...provided,
 					minWidth: '20px',
 					color: theme.color,
-				}),
-			menu: (provided: any) =>
-				Object.assign(provided, {
+				};
+			},
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			menu: (provided: any) => {
+				return { ...provided,
 					color: theme.color,
 					fontFamily: theme.fontFamily,
 					backgroundColor: theme.backgroundColor,
-				}),
-			option: (provided: any, state: any) =>
-				Object.assign(provided, {
+				};
+			},
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			option: (provided: any, state: any) => {
+				return { ...provided,
 					color: theme.color,
 					fontFamily: theme.fontFamily,
 					paddingLeft: `${10 + (state.data.indentDepth || 0) * 20}px`,
-				}),
-			multiValueLabel: (provided: any) =>
-				Object.assign(provided, {
+				};
+			},
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			multiValueLabel: (provided: any) => {
+				return { ...provided,
 					fontFamily: theme.fontFamily,
-				}),
-			multiValueRemove: (provided: any) =>
-				Object.assign(provided, {
+				};
+			},
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			multiValueRemove: (provided: any) => {
+				return { ...provided,
 					color: theme.color,
-				}),
+				};
+			},
 		};
 
-		this.styles_.selectTheme = (tagTheme: any) =>
-			Object.assign(tagTheme, {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+		this.styles_.selectTheme = (tagTheme: any) => {
+			return { ...tagTheme,
 				borderRadius: 2,
-				colors: Object.assign(tagTheme.colors, {
+				colors: { ...tagTheme.colors,
 					primary: theme.raisedBackgroundColor,
 					primary25: theme.raisedBackgroundColor,
 					neutral0: theme.backgroundColor,
@@ -171,36 +183,35 @@ export default class PromptDialog extends React.Component<Props, any> {
 					neutral90: theme.color,
 					danger: theme.backgroundColor,
 					dangerLight: theme.colorError2,
-				}),
-			});
+				},
+			};
+		};
 
-		this.styles_.desc = Object.assign({}, theme.textStyle, {
-			marginTop: 10,
-		});
+		this.styles_.desc = { ...theme.textStyle, marginTop: 10 };
 
 		return this.styles_;
 	}
 
-	render() {
-		const style = this.props.style;
+	public render() {
+		if (!this.state.visible) return null;
+
 		const theme = themeStyle(this.props.themeId);
 		const buttonTypes = this.props.buttons ? this.props.buttons : ['ok', 'cancel'];
 
-		const styles = this.styles(this.props.themeId, style.width, style.height, this.state.visible);
+		const styles = this.styles(this.props.themeId, this.state.visible);
 
 		const onClose = (accept: boolean, buttonType: string = null) => {
 			if (this.props.onClose) {
 				let outputAnswer = this.state.answer;
 				if (this.props.inputType === 'datetime') {
-					// outputAnswer = anythingToDate(outputAnswer);
-					outputAnswer = time.anythingToDateTime(outputAnswer);
+					outputAnswer = isValidDate(outputAnswer) ? formatDateTimeLocalToMs(outputAnswer) : null;
 				}
 				this.props.onClose(accept ? outputAnswer : null, buttonType);
 			}
 			this.setState({ visible: false, answer: '' });
 		};
 
-		const onChange = (event: any) => {
+		const onChange = (event: ChangeEvent<HTMLInputElement>) => {
 			this.setState({ answer: event.target.value });
 		};
 
@@ -213,27 +224,23 @@ export default class PromptDialog extends React.Component<Props, any> {
 		// 	return m.isValid() ? m.toDate() : null;
 		// }
 
-		const onDateTimeChange = (momentObject: any) => {
-			this.setState({ answer: momentObject });
-		};
-
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 		const onSelectChange = (newValue: any) => {
 			this.setState({ answer: newValue });
 			this.focusInput_ = true;
 		};
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 		const onKeyDown = (event: any) => {
 			if (event.key === 'Enter') {
-				if (this.props.inputType === 'tags' || this.props.inputType === 'dropdown') {
+				// If the dropdown is open, we don't close the dialog - instead
+				// the currently item will be selected. If it is closed however
+				// we confirm the dialog.
+				if ((this.props.inputType === 'tags' || this.props.inputType === 'dropdown') && this.menuIsOpened_) {
 					// Do nothing
 				} else {
 					onClose(true);
 				}
-
-				// } else if (this.answerInput_.current && !this.answerInput_.current.state.menuIsOpen) {
-				// 	// The menu will be open if the user is selecting a new item
-				// 	onClose(true);
-				// }
 			} else if (event.key === 'Escape') {
 				onClose(false);
 			}
@@ -244,11 +251,19 @@ export default class PromptDialog extends React.Component<Props, any> {
 		let inputComp = null;
 
 		if (this.props.inputType === 'datetime') {
-			inputComp = <Datetime className="datetime-picker" value={this.state.answer} inputProps={{ style: styles.input }} dateFormat={time.dateFormat()} timeFormat={time.timeFormat()} onChange={(momentObject: any) => onDateTimeChange(momentObject)} />;
+			inputComp = <input
+				defaultValue={this.state.answer}
+				onChange={onChange}
+				type="datetime-local"
+				className='datetime-picker'
+				style={styles.input}
+			/>;
 		} else if (this.props.inputType === 'tags') {
-			inputComp = <CreatableSelect className="tag-selector" styles={styles.select} theme={styles.selectTheme} ref={this.answerInput_} value={this.state.answer} placeholder="" components={makeAnimated()} isMulti={true} isClearable={false} backspaceRemovesValue={true} options={this.props.autocomplete} onChange={onSelectChange} onKeyDown={(event: any) => onKeyDown(event)} />;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			inputComp = <CreatableSelect className="tag-selector" onMenuOpen={this.select_menuOpen} onMenuClose={this.select_menuClose} styles={styles.select} theme={styles.selectTheme} ref={this.answerInput_} value={this.state.answer} placeholder="" components={makeAnimated()} isMulti={true} isClearable={false} backspaceRemovesValue={true} options={this.props.autocomplete} onChange={onSelectChange} onKeyDown={(event: any) => onKeyDown(event)} />;
 		} else if (this.props.inputType === 'dropdown') {
-			inputComp = <Select className="item-selector" styles={styles.select} theme={styles.selectTheme} ref={this.answerInput_} components={makeAnimated()} value={this.props.answer} defaultValue={this.props.defaultValue} isClearable={false} options={this.props.autocomplete} onChange={onSelectChange} onKeyDown={(event: any) => onKeyDown(event)} />;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+			inputComp = <Select className="item-selector" onMenuOpen={this.select_menuOpen} onMenuClose={this.select_menuClose} styles={styles.select} theme={styles.selectTheme} ref={this.answerInput_} components={makeAnimated()} value={this.props.answer} defaultValue={this.props.defaultValue} isClearable={false} options={this.props.autocomplete} onChange={onSelectChange} onKeyDown={(event: any) => onKeyDown(event)} />;
 		} else {
 			inputComp = <input style={styles.input} ref={this.answerInput_} value={this.state.answer} type="text" onChange={event => onChange(event)} onKeyDown={event => onKeyDown(event)} />;
 		}
@@ -258,42 +273,40 @@ export default class PromptDialog extends React.Component<Props, any> {
 			buttonComps.push(
 				<button key="create" disabled={!this.state.answer} style={styles.button} onClick={() => onClose(true, 'create')}>
 					{_('Create')}
-				</button>
+				</button>,
 			);
 		}
 		if (buttonTypes.indexOf('ok') >= 0) {
 			buttonComps.push(
 				<button key="ok" disabled={!this.state.answer} style={styles.button} onClick={() => onClose(true, 'ok')}>
 					{_('OK')}
-				</button>
+				</button>,
 			);
 		}
 		if (buttonTypes.indexOf('cancel') >= 0) {
 			buttonComps.push(
 				<button key="cancel" style={styles.button} onClick={() => onClose(false, 'cancel')}>
 					{_('Cancel')}
-				</button>
+				</button>,
 			);
 		}
 		if (buttonTypes.indexOf('clear') >= 0) {
 			buttonComps.push(
 				<button key="clear" style={styles.button} onClick={() => onClose(false, 'clear')}>
 					{_('Clear')}
-				</button>
+				</button>,
 			);
 		}
 
 		return (
-			<div className="modal-layer" style={styles.modalLayer}>
-				<div className="modal-dialog" style={styles.promptDialog}>
-					<label style={styles.label}>{this.props.label ? this.props.label : ''}</label>
-					<div style={{ display: 'inline-block', color: 'black', backgroundColor: theme.backgroundColor }}>
-						{inputComp}
-						{descComp}
-					</div>
-					<div style={{ textAlign: 'right', marginTop: 10 }}>{buttonComps}</div>
+			<Dialog className='prompt-dialog' contentStyle={styles.dialog}>
+				<label style={styles.label}>{this.props.label ? this.props.label : ''}</label>
+				<div style={{ display: 'inline-block', color: 'black', backgroundColor: theme.backgroundColor }}>
+					{inputComp}
+					{descComp}
 				</div>
-			</div>
+				<div style={{ textAlign: 'right', marginTop: 10 }}>{buttonComps}</div>
+			</Dialog>
 		);
 	}
 }
