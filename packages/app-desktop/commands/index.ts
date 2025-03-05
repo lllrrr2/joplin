@@ -1,9 +1,12 @@
-// AUTO-GENERATED using `gulp buildCommandIndex`
+// AUTO-GENERATED using `gulp buildScriptIndexes`
 import * as copyDevCommand from './copyDevCommand';
 import * as editProfileConfig from './editProfileConfig';
+import * as emptyTrash from './emptyTrash';
+import * as exportDeletionLog from './exportDeletionLog';
 import * as exportFolders from './exportFolders';
 import * as exportNotes from './exportNotes';
 import * as focusElement from './focusElement';
+import * as openNoteInNewWindow from './openNoteInNewWindow';
 import * as openProfileDirectory from './openProfileDirectory';
 import * as replaceMisspelling from './replaceMisspelling';
 import * as restoreNoteRevision from './restoreNoteRevision';
@@ -15,13 +18,17 @@ import * as switchProfile2 from './switchProfile2';
 import * as switchProfile3 from './switchProfile3';
 import * as toggleExternalEditing from './toggleExternalEditing';
 import * as toggleSafeMode from './toggleSafeMode';
+import * as toggleTabMovesFocus from './toggleTabMovesFocus';
 
-const index:any[] = [
+const index: any[] = [
 	copyDevCommand,
 	editProfileConfig,
+	emptyTrash,
+	exportDeletionLog,
 	exportFolders,
 	exportNotes,
 	focusElement,
+	openNoteInNewWindow,
 	openProfileDirectory,
 	replaceMisspelling,
 	restoreNoteRevision,
@@ -33,7 +40,8 @@ const index:any[] = [
 	switchProfile3,
 	toggleExternalEditing,
 	toggleSafeMode,
+	toggleTabMovesFocus,
 ];
 
 export default index;
-// AUTO-GENERATED using `gulp buildCommandIndex`
+// AUTO-GENERATED using `gulp buildScriptIndexes`

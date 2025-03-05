@@ -1,26 +1,35 @@
 import * as React from 'react';
 import { themeStyle } from '@joplin/lib/theme';
 import { _ } from '@joplin/lib/locale';
+import { focus } from '@joplin/lib/utils/focusHandler';
 
 interface Props {
 	themeId: number;
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
 	onNext: Function;
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
 	onPrevious: Function;
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
 	onClose: Function;
+	// eslint-disable-next-line @typescript-eslint/ban-types -- Old code before rule was applied
 	onChange: Function;
 	query: string;
 	searching: boolean;
 	resultCount: number;
 	selectedIndex: number;
 	visiblePanes: string[];
+	editorType: string;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	style: any;
 }
 
 class NoteSearchBar extends React.Component<Props> {
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private backgroundColor: any;
+	private searchInputRef: React.RefObject<HTMLInputElement>;
 
-	constructor(props: Props) {
+	public constructor(props: Props) {
 		super(props);
 
 		this.searchInput_change = this.searchInput_change.bind(this);
@@ -28,25 +37,27 @@ class NoteSearchBar extends React.Component<Props> {
 		this.previousButton_click = this.previousButton_click.bind(this);
 		this.nextButton_click = this.nextButton_click.bind(this);
 		this.closeButton_click = this.closeButton_click.bind(this);
+
+		// eslint-disable-next-line no-restricted-properties
 		this.focus = this.focus.bind(this);
 
 		this.backgroundColor = undefined;
+		this.searchInputRef = React.createRef();
 	}
 
-	style() {
+	public style() {
 		const theme = themeStyle(this.props.themeId);
 
 		const style = {
-			root: Object.assign({}, theme.textStyle, {
-				backgroundColor: theme.backgroundColor,
-				color: theme.colorFaded,
-			}),
+			root: { ...theme.textStyle, backgroundColor: theme.backgroundColor,
+				color: theme.colorFaded },
 		};
 
 		return style;
 	}
 
-	buttonIconComponent(iconName: string, clickHandler: any, isEnabled: boolean) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public buttonIconComponent(iconName: string, clickHandler: any, isEnabled: boolean) {
 		const theme = themeStyle(this.props.themeId);
 
 		const searchButton = {
@@ -74,12 +85,14 @@ class NoteSearchBar extends React.Component<Props> {
 		);
 	}
 
-	searchInput_change(event: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	private searchInput_change(event: any) {
 		const query = event.currentTarget.value;
 		this.triggerOnChange(query);
 	}
 
-	searchInput_keyDown(event: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	private searchInput_keyDown(event: any) {
 		if (event.keyCode === 13) {
 			// ENTER
 			event.preventDefault();
@@ -106,28 +119,28 @@ class NoteSearchBar extends React.Component<Props> {
 		}
 	}
 
-	previousButton_click() {
+	private previousButton_click() {
 		if (this.props.onPrevious) this.props.onPrevious();
 	}
 
-	nextButton_click() {
+	private nextButton_click() {
 		if (this.props.onNext) this.props.onNext();
 	}
 
-	closeButton_click() {
+	private closeButton_click() {
 		if (this.props.onClose) this.props.onClose();
 	}
 
-	triggerOnChange(query: string) {
+	public triggerOnChange(query: string) {
 		if (this.props.onChange) this.props.onChange(query);
 	}
 
-	focus() {
-		(this.refs.searchInput as any).focus();
-		(this.refs.searchInput as any).select();
+	public focus() {
+		focus('NoteSearchBar::focus', this.searchInputRef.current);
+		this.searchInputRef.current?.select();
 	}
 
-	render() {
+	public render() {
 		const query = this.props.query ? this.props.query : '';
 
 		// backgroundColor needs to cached to a local variable to prevent the
@@ -150,12 +163,10 @@ class NoteSearchBar extends React.Component<Props> {
 		const previousButton = this.buttonIconComponent('fa-chevron-up', this.previousButton_click, buttonEnabled);
 		const nextButton = this.buttonIconComponent('fa-chevron-down', this.nextButton_click, buttonEnabled);
 
-		const textStyle = Object.assign({
-			fontSize: theme.fontSize,
+		const textStyle = { fontSize: theme.fontSize,
 			fontFamily: theme.fontFamily,
 			color: theme.colorFaded,
-			backgroundColor: theme.backgroundColor,
-		});
+			backgroundColor: theme.backgroundColor };
 
 		const matchesFoundString = (query.length > 0) ? (
 			<div style={textStyle}>
@@ -163,13 +174,17 @@ class NoteSearchBar extends React.Component<Props> {
 			</div>
 		) : null;
 
-		const allowScrolling = this.props.visiblePanes.indexOf('editor') >= 0;
+		const editorVisible = this.props.visiblePanes.includes('editor');
+		const usesEditorSearch = this.props.editorType === 'CodeMirror6' && editorVisible;
+		const allowScrolling = editorVisible;
 
 		const viewerWarning = (
 			<div style={textStyle}>
 				{'Jumping between matches is not available in the viewer, please toggle the editor'}
 			</div>
 		);
+
+		if (usesEditorSearch) return null;
 
 		return (
 			<div className="note-search-bar" style={this.props.style}>
@@ -180,7 +195,7 @@ class NoteSearchBar extends React.Component<Props> {
 						value={query}
 						onChange={this.searchInput_change}
 						onKeyDown={this.searchInput_keyDown}
-						ref="searchInput"
+						ref={this.searchInputRef}
 						type="text"
 						style={{ width: 200, marginRight: 5, backgroundColor: this.backgroundColor, color: theme.color }}
 					/>

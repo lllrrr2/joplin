@@ -5,7 +5,7 @@ const stripAnsi = require('strip-ansi');
 const { handleAutocompletion } = require('../autocompletion.js');
 
 export default class StatusBarWidget extends BaseWidget {
-	constructor() {
+	public constructor() {
 		super();
 
 		this.promptState_ = null;
@@ -14,20 +14,21 @@ export default class StatusBarWidget extends BaseWidget {
 		this.items_ = [];
 	}
 
-	get name() {
+	public get name() {
 		return 'statusBar';
 	}
 
-	get canHaveFocus() {
+	public get canHaveFocus() {
 		return false;
 	}
 
-	setItemAt(index: number, text: string) {
+	public setItemAt(index: number, text: string) {
 		this.items_[index] = stripAnsi(text).trim();
 		this.invalidate();
 	}
 
-	async prompt(initialText = '', promptString: any = null, options: any = null) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public async prompt(initialText = '', promptString: any = null, options: any = null) {
 		if (this.promptState_) throw new Error('Another prompt already active');
 		if (promptString === null) promptString = ':';
 		if (options === null) options = {};
@@ -53,15 +54,15 @@ export default class StatusBarWidget extends BaseWidget {
 		return this.promptState_.promise;
 	}
 
-	get promptActive() {
+	public get promptActive() {
 		return !!this.promptState_;
 	}
 
-	get history() {
+	public get history() {
 		return this.history_;
 	}
 
-	resetCursor() {
+	public resetCursor() {
 		if (!this.promptActive) return;
 		if (!this.inputEventEmitter_) return;
 
@@ -70,7 +71,7 @@ export default class StatusBarWidget extends BaseWidget {
 		this.term.moveTo(this.absoluteInnerX + termutils.textLength(this.promptState_.promptString) + this.inputEventEmitter_.getInput().length, this.absoluteInnerY);
 	}
 
-	render() {
+	public render() {
 		super.render();
 
 		const doSaveCursor = !this.promptActive;
@@ -86,6 +87,7 @@ export default class StatusBarWidget extends BaseWidget {
 
 		// const textStyle = this.promptActive ? (s) => s : chalk.bgBlueBright.white;
 		// const textStyle = (s) => s;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 		const textStyle = this.promptActive ? (s: any) => s : chalk.gray;
 
 		this.term.drawHLine(this.absoluteInnerX, this.absoluteInnerY, this.innerWidth, textStyle(' '));
@@ -106,6 +108,7 @@ export default class StatusBarWidget extends BaseWidget {
 
 			const isSecurePrompt = !!this.promptState_.secure;
 
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 			const options: any = {
 				cancelable: true,
 				history: this.history,
@@ -118,6 +121,7 @@ export default class StatusBarWidget extends BaseWidget {
 			if ('cursorPosition' in this.promptState_) options.cursorPosition = this.promptState_.cursorPosition;
 			if (isSecurePrompt) options.echoChar = true;
 
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 			this.inputEventEmitter_ = this.term.inputField(options, (error: any, input: any) => {
 				let resolveResult = null;
 				const resolveFn = this.promptState_.resolve;

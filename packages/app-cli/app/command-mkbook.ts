@@ -1,27 +1,27 @@
 const BaseCommand = require('./base-command').default;
-const { app } = require('./app.js');
+import app from './app';
 import { _ } from '@joplin/lib/locale';
 import BaseModel from '@joplin/lib/BaseModel';
 import Folder from '@joplin/lib/models/Folder';
 import { FolderEntity } from '@joplin/lib/services/database/types';
 
 class Command extends BaseCommand {
-	usage() {
+	public usage() {
 		return 'mkbook <new-notebook>';
 	}
 
-	description() {
+	public description() {
 		return _('Creates a new notebook.');
 	}
 
-	options() {
+	public options() {
 		return [
 			['-p, --parent <parent-notebook>', _('Create a new notebook under a parent notebook.')],
 		];
 	}
 
 	// validDestinationFolder check for presents and ambiguous folders
-	async validDestinationFolder(targetFolder: string) {
+	public async validDestinationFolder(targetFolder: string) {
 
 		const destinationFolder = await app().loadItem(BaseModel.TYPE_FOLDER, targetFolder);
 		if (!destinationFolder) {
@@ -36,14 +36,15 @@ class Command extends BaseCommand {
 		return destinationFolder;
 	}
 
-	async saveAndSwitchFolder(newFolder: FolderEntity) {
+	public async saveAndSwitchFolder(newFolder: FolderEntity) {
 
 		const folder = await Folder.save(newFolder, { userSideValidation: true });
 		app().switchCurrentFolder(folder);
 
 	}
 
-	async action(args: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	public async action(args: any) {
 		const targetFolder = args.options.parent;
 
 		const newFolder: FolderEntity = {

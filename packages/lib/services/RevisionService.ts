@@ -9,7 +9,7 @@ import shim from '../shim';
 import BaseService from './BaseService';
 import { _ } from '../locale';
 import { ItemChangeEntity, NoteEntity, RevisionEntity } from './database/types';
-import Logger from '../Logger';
+import Logger from '@joplin/utils/Logger';
 import { MarkupLanguage } from '../../renderer';
 const { substrWithEllipsis } = require('../string-utils');
 const { sprintf } = require('sprintf-js');
@@ -25,24 +25,28 @@ export default class RevisionService extends BaseService {
 	// notes never benefited from revisions so the first time they are modified, a copy of
 	// the original note is saved. The goal is to have at least one revision in case the note
 	// is deleted or modified as a result of a bug or user mistake.
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private isOldNotesCache_: any = {};
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private maintenanceCalls_: any[] = [];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private maintenanceTimer1_: any = null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	private maintenanceTimer2_: any = null;
 	private isCollecting_ = false;
 	public isRunningInBackground_ = false;
 
-	static instance() {
+	public static instance() {
 		if (this.instance_) return this.instance_;
 		this.instance_ = new RevisionService();
 		return this.instance_;
 	}
 
-	oldNoteCutOffDate_() {
+	public oldNoteCutOffDate_() {
 		return Date.now() - Setting.value('revisionService.oldNoteInterval');
 	}
 
-	async isOldNote(noteId: string) {
+	public async isOldNote(noteId: string) {
 		if (noteId in this.isOldNotesCache_) return this.isOldNotesCache_[noteId];
 
 		const isOld = await Note.noteIsOlderThan(noteId, this.oldNoteCutOffDate_());
@@ -50,11 +54,13 @@ export default class RevisionService extends BaseService {
 		return isOld;
 	}
 
-	noteMetadata_(note: NoteEntity) {
+	private noteMetadata_(note: NoteEntity) {
 		const excludedFields = ['type_', 'title', 'body', 'created_time', 'updated_time', 'encryption_applied', 'encryption_cipher_text', 'is_conflict'];
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 		const md: any = {};
 		for (const k in note) {
 			if (excludedFields.indexOf(k) >= 0) continue;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 			md[k] = (note as any)[k];
 		}
 
@@ -126,13 +132,15 @@ export default class RevisionService extends BaseService {
 					ORDER BY id ASC
 					LIMIT 10
 				`,
-					[BaseModel.TYPE_NOTE, ItemChange.SOURCE_SYNC, ItemChange.SOURCE_DECRYPTION, Setting.value('revisionService.lastProcessedChangeId')]
+					[BaseModel.TYPE_NOTE, ItemChange.SOURCE_SYNC, ItemChange.SOURCE_DECRYPTION, Setting.value('revisionService.lastProcessedChangeId')],
 				);
 
 				if (!changes.length) break;
 
 				const noteIds = changes.map((a) => a.item_id);
-				const notes = await Note.modelSelectAll(`SELECT * FROM notes WHERE is_conflict = 0 AND encryption_applied = 0 AND id IN ("${noteIds.join('","')}")`);
+				const notes = await Note.modelSelectAll(`SELECT * FROM notes WHERE is_conflict = 0 AND encryption_applied = 0 AND id IN (${
+					Note.escapeIdsForSql(noteIds)
+				})`);
 
 				for (let i = 0; i < changes.length; i++) {
 					const change = changes[i];
@@ -214,7 +222,7 @@ export default class RevisionService extends BaseService {
 		logger.info(`collectRevisions: Created revisions for ${doneNoteIds.length} notes`);
 	}
 
-	async deleteOldRevisions(ttl: number) {
+	public async deleteOldRevisions(ttl: number) {
 		return Revision.deleteOldRevisions(ttl);
 	}
 
@@ -224,26 +232,25 @@ export default class RevisionService extends BaseService {
 		const rev = revisions[index];
 		const merged = await Revision.mergeDiffs(rev, revisions);
 
-		const output: NoteEntity = Object.assign(
-			{
-				title: merged.title,
-				body: merged.body,
-			},
-			merged.metadata
-		);
+		const output: NoteEntity = {
+			title: merged.title,
+			body: merged.body,
+			...merged.metadata,
+		};
 		output.updated_time = output.user_updated_time;
 		output.created_time = output.user_created_time;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 		(output as any).type_ = BaseModel.TYPE_NOTE;
 		if (!('markup_language' in output)) output.markup_language = MarkupLanguage.Markdown;
 
 		return output;
 	}
 
-	restoreFolderTitle() {
+	public restoreFolderTitle() {
 		return _('Restored Notes');
 	}
 
-	async restoreFolder() {
+	public async restoreFolder() {
 		let folder = await Folder.loadByTitle(this.restoreFolderTitle());
 		if (!folder) {
 			folder = await Folder.save({ title: this.restoreFolderTitle() });
@@ -267,8 +274,8 @@ export default class RevisionService extends BaseService {
 		return _('The note "%s" has been successfully restored to the notebook "%s".', substrWithEllipsis(note.title, 0, 32), this.restoreFolderTitle());
 	}
 
-	async importRevisionNote(note: NoteEntity): Promise<NoteEntity> {
-		const toImport = Object.assign({}, note);
+	public async importRevisionNote(note: NoteEntity): Promise<NoteEntity> {
+		const toImport = { ...note };
 		delete toImport.id;
 		delete toImport.updated_time;
 		delete toImport.created_time;
@@ -282,7 +289,7 @@ export default class RevisionService extends BaseService {
 		return Note.save(toImport);
 	}
 
-	async maintenance() {
+	public async maintenance() {
 		this.maintenanceCalls_.push(true);
 		try {
 			const startTime = Date.now();
@@ -308,7 +315,7 @@ export default class RevisionService extends BaseService {
 		}
 	}
 
-	runInBackground(collectRevisionInterval: number = null) {
+	public runInBackground(collectRevisionInterval: number = null) {
 		if (this.isRunningInBackground_) return;
 		this.isRunningInBackground_ = true;
 
@@ -325,7 +332,7 @@ export default class RevisionService extends BaseService {
 		}, collectRevisionInterval);
 	}
 
-	async cancelTimers() {
+	public async cancelTimers() {
 		if (this.maintenanceTimer1_) {
 			shim.clearTimeout(this.maintenanceTimer1_);
 			this.maintenanceTimer1_ = null;

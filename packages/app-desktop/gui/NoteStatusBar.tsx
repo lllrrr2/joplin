@@ -11,20 +11,18 @@ interface Props {
 }
 
 class NoteStatusBarComponent extends React.Component<Props> {
-	style() {
+	public style() {
 		const theme = themeStyle(this.props.themeId);
 
 		const style = {
-			root: Object.assign({}, theme.textStyle, {
-				backgroundColor: theme.backgroundColor,
-				color: theme.colorFaded,
-			}),
+			root: { ...theme.textStyle, backgroundColor: theme.backgroundColor,
+				color: theme.colorFaded },
 		};
 
 		return style;
 	}
 
-	render() {
+	public render() {
 		const note = this.props.note;
 		return <div style={this.style().root}>{time.formatMsToLocal(note.user_updated_time)}</div>;
 	}

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import NotesScreen from './screens/Notes';
-const { SearchScreen } = require('./screens/search.js');
+import SearchScreen from './screens/SearchScreen';
 import { Component } from 'react';
 import { KeyboardAvoidingView, Keyboard, Platform, View, KeyboardEvent, Dimensions, EmitterSubscription } from 'react-native';
 import { AppState } from '../utils/types';
-const { themeStyle } = require('./global-style.js');
+import { themeStyle } from './global-style';
 
 interface State {
 	autoCompletionBarExtraHeight: number;
@@ -13,8 +13,11 @@ interface State {
 }
 
 interface Props {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	route: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	screens: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	dispatch: (action: any)=> void;
 	themeId: number;
 }
@@ -25,7 +28,7 @@ class AppNavComponent extends Component<Props, State> {
 	private keyboardDidHideListener: EmitterSubscription|null = null;
 	private keyboardWillChangeFrameListener: EmitterSubscription|null = null;
 
-	constructor(props: Props) {
+	public constructor(props: Props) {
 		super(props);
 
 		this.previousRouteName_ = null;
@@ -35,7 +38,7 @@ class AppNavComponent extends Component<Props, State> {
 		};
 	}
 
-	UNSAFE_componentWillMount() {
+	public UNSAFE_componentWillMount() {
 		if (Platform.OS === 'ios') {
 			this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow.bind(this));
 			this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide.bind(this));
@@ -43,7 +46,7 @@ class AppNavComponent extends Component<Props, State> {
 		}
 	}
 
-	componentWillUnmount() {
+	public componentWillUnmount() {
 		this.keyboardDidShowListener?.remove();
 		this.keyboardDidHideListener?.remove();
 		this.keyboardWillChangeFrameListener?.remove();
@@ -53,25 +56,25 @@ class AppNavComponent extends Component<Props, State> {
 		this.keyboardWillChangeFrameListener = null;
 	}
 
-	keyboardDidShow() {
+	public keyboardDidShow() {
 		this.setState({ autoCompletionBarExtraHeight: 30 });
 	}
 
-	keyboardDidHide() {
+	public keyboardDidHide() {
 		this.setState({ autoCompletionBarExtraHeight: 0 });
 	}
 
-	keyboardWillChangeFrame = (evt: KeyboardEvent) => {
+	private keyboardWillChangeFrame = (evt: KeyboardEvent) => {
 		const windowWidth = Dimensions.get('window').width;
 
-		// If the keyboard isn't as wide as the window, the floating keyboard is diabled.
+		// If the keyboard isn't as wide as the window, the floating keyboard is disabled.
 		// See https://github.com/facebook/react-native/issues/29473#issuecomment-696658937
 		this.setState({
 			floatingKeyboardEnabled: evt.endCoordinates.width < windowWidth,
 		});
 	};
 
-	render() {
+	public render() {
 		if (!this.props.route) throw new Error('Route must not be null');
 
 		// Note: certain screens are kept into memory, in particular Notes and Search
@@ -101,7 +104,7 @@ class AppNavComponent extends Component<Props, State> {
 
 		const style = { flex: 1, backgroundColor: theme.backgroundColor };
 
-		// When the floating keybaord is enabled, the KeyboardAvoidingView can have a very small
+		// When the floating keyboard is enabled, the KeyboardAvoidingView can have a very small
 		// height. Don't use the KeyboardAvoidingView when the floating keyboard is enabled.
 		// See https://github.com/facebook/react-native/issues/29473
 		const keyboardAvoidingViewEnabled = !this.state.floatingKeyboardEnabled;
@@ -112,8 +115,8 @@ class AppNavComponent extends Component<Props, State> {
 				behavior={Platform.OS === 'ios' ? 'padding' : null}
 				style={style}
 			>
-				<NotesScreen visible={notesScreenVisible} navigation={{ state: route }} />
-				{searchScreenLoaded && <SearchScreen visible={searchScreenVisible} navigation={{ state: route }} />}
+				<NotesScreen visible={notesScreenVisible} />
+				{searchScreenLoaded && <SearchScreen visible={searchScreenVisible} />}
 				{!notesScreenVisible && !searchScreenVisible && <Screen navigation={{ state: route }} themeId={this.props.themeId} dispatch={this.props.dispatch} />}
 				<View style={{ height: this.state.autoCompletionBarExtraHeight }} />
 			</KeyboardAvoidingView>
